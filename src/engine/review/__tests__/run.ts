@@ -13,13 +13,18 @@ const motifCounts: Record<string, { pass: number; fail: number }> = {};
 
 // Validate every fixture upfront — authoring errors should surface as a
 // single clear failure rather than mysterious "expected fork, got null".
+const validationErrors: string[] = [];
 for (const f of allFixtures) {
   try {
     validateFixture(f);
   } catch (e) {
-    console.error(`✗ FIXTURE INVALID: ${(e as Error).message}`);
-    process.exit(2);
+    validationErrors.push((e as Error).message);
   }
+}
+if (validationErrors.length > 0) {
+  console.error(`\n${validationErrors.length} fixture validation error(s):`);
+  for (const m of validationErrors) console.error(`  ✗ ${m}`);
+  process.exit(2);
 }
 
 function fixtureToReviewInput(f: Fixture) {

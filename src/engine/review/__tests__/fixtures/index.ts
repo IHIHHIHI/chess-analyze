@@ -1,20 +1,20 @@
 import type { Fixture } from '../../types';
 import { defenderFixtures } from './defender.fixtures';
 import { discoveredFixtures } from './discovered.fixtures';
+import { forkFixtures } from './fork.fixtures';
 import { materialFixtures } from './material.fixtures';
-// Temporarily excluded — invalid FEN/UCI in one fixture is blocking the
-// runner; coordinator will reinstate after fixing.
-// import { pinFixtures } from './pin.fixtures';
+import { pinFixtures } from './pin.fixtures';
 import { positionalFixtures } from './positional.fixtures';
 import { skewerFixtures } from './skewer.fixtures';
 import { trappedFixtures } from './trapped.fixtures';
 
-// Phase B will append: forkFixtures, pinFixtures.
 export const allFixtures: Fixture[] = [
   ...materialFixtures,
+  ...forkFixtures,
+  ...pinFixtures,
   ...skewerFixtures,
-  ...defenderFixtures,
   ...discoveredFixtures,
   ...trappedFixtures,
+  ...defenderFixtures,
   ...positionalFixtures,
 ];

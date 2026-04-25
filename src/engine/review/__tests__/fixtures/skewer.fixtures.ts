@@ -163,9 +163,10 @@ export const skewerFixtures: Fixture[] = [
   // either: Rxe5 would be answered by Bxe5 with net -2 for white. The
   // pipeline must return null on this position.
   {
-    name: 'S1 negative: Re1 is a pin (Ne5 in front of Ke8, defended)',
+    name: 'S1 negative: Re1 is a pin (Ne5 in front of Ke8, defended) — P1 narrates',
     motif: 'pin',
-    source: 'synthetic — defended pin pattern; not a skewer, no gain',
+    source:
+      'synthetic — defended pin pattern; not a skewer. P1 fires; S1 stays silent.',
     prevFen: '4k3/8/3b4/4n3/8/7K/8/3R4 w - - 0 1',
     prevEval: {
       cp: 80,
@@ -180,7 +181,7 @@ export const skewerFixtures: Fixture[] = [
     },
     mover: 'w',
     category: 'inaccuracy',
-    expected: { comment: null },
+    expected: { commentContains: ['re1', 'pin', 'knight', 'e5', 'king'] },
   },
 
   // NEGATIVE: equal-value front and back (rook attacking rook, with rook
