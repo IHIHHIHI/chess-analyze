@@ -64,7 +64,7 @@ export const positionalFixtures: Fixture[] = [
     currEval: { cp: -100, bestMoveUci: 'd5b3', pv: ['d5b3'] },
     mover: 'w',
     category: 'mistake',
-    expected: { comment: null },
+    expected: { commentNotContains: ['doubles'] },
   },
 
   // ──────────────────────────────────────────────────────────────────
@@ -116,7 +116,7 @@ export const positionalFixtures: Fixture[] = [
     currEval: { cp: -100, bestMoveUci: 'e8e7', pv: ['e8e7'] },
     mover: 'w',
     category: 'mistake',
-    expected: { comment: null },
+    expected: { commentNotContains: ['isolates'] },
   },
 
   // ──────────────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ export const positionalFixtures: Fixture[] = [
     currEval: { cp: -100, bestMoveUci: 'e8e7', pv: ['e8e7'] },
     mover: 'w',
     category: 'mistake',
-    expected: { comment: null },
+    expected: { commentNotContains: ['backward'] },
   },
 
   // ──────────────────────────────────────────────────────────────────
@@ -220,7 +220,7 @@ export const positionalFixtures: Fixture[] = [
     currEval: { cp: -100, bestMoveUci: 'e8e7', pv: ['e8e7'] },
     mover: 'w',
     category: 'mistake',
-    expected: { comment: null },
+    expected: { commentNotContains: ['weakens'] },
   },
 
   // ──────────────────────────────────────────────────────────────────
@@ -275,7 +275,7 @@ export const positionalFixtures: Fixture[] = [
     currEval: { cp: -100, bestMoveUci: 'e7e5', pv: ['e7e5'] },
     mover: 'w',
     category: 'mistake',
-    expected: { comment: null },
+    expected: { commentNotContains: ['castling'] },
   },
 
   // ──────────────────────────────────────────────────────────────────
@@ -327,7 +327,7 @@ export const positionalFixtures: Fixture[] = [
     currEval: { cp: -100, bestMoveUci: 'g7f6', pv: ['g7f6'] },
     mover: 'w',
     category: 'mistake',
-    expected: { comment: null },
+    expected: { commentNotContains: ['bishop pair'] },
   },
 
   // ──────────────────────────────────────────────────────────────────
@@ -379,7 +379,7 @@ export const positionalFixtures: Fixture[] = [
     currEval: { cp: -100, bestMoveUci: 'e8e7', pv: ['e8e7'] },
     mover: 'w',
     category: 'mistake',
-    expected: { comment: null },
+    expected: { commentNotContains: ['locks'] },
   },
 
   // ──────────────────────────────────────────────────────────────────
@@ -395,6 +395,6 @@ export const positionalFixtures: Fixture[] = [
     currEval: { cp: -30, bestMoveUci: 'e6d5', pv: ['e6d5'] },
     mover: 'w',
     category: 'inaccuracy',
-    expected: { comment: null },
+    expected: { commentNotContains: ['doubles'] },
   },
 ];

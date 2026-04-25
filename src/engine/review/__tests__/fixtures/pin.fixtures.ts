@@ -121,7 +121,7 @@ export const pinFixtures: Fixture[] = [
     currEval: { cp: -80, bestMoveUci: 'e8e7', pv: ['e8e7'] },
     mover: 'w',
     category: 'mistake',
-    expected: { comment: null },
+    expected: { commentNotContains: ['pin'] },
   },
   {
     name: 'P1 negative: anchor is same value as pinned (rook would pin bishop to bishop)',
@@ -139,7 +139,7 @@ export const pinFixtures: Fixture[] = [
     currEval: { cp: -100, bestMoveUci: 'e5f6', pv: ['e5f6'] },
     mover: 'w',
     category: 'inaccuracy',
-    expected: { comment: null },
+    expected: { commentNotContains: ['pin'] },
   },
   {
     name: 'P1 negative: pinned piece is a pawn (under 3-pt threshold)',
@@ -156,6 +156,6 @@ export const pinFixtures: Fixture[] = [
     currEval: { cp: -30, bestMoveUci: 'e8d8', pv: ['e8d8'] },
     mover: 'w',
     category: 'mistake',
-    expected: { comment: null },
+    expected: { commentNotContains: ['pin'] },
   },
 ];

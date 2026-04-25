@@ -106,7 +106,7 @@ export const realGameFixtures: Fixture[] = [
     },
     mover: 'w',
     category: 'inaccuracy',
-    expected: { comment: null },
+    expected: { commentNotContains: ['fork'] },
   },
 
   // F1 royal-fork false positive: Qf6+ checks king and "forks" g7-pawn.
@@ -152,7 +152,34 @@ export const realGameFixtures: Fixture[] = [
     currEval: { mate: 0, bestMoveUci: null, pv: [] },
     mover: 'b',
     category: 'blunder',
-    expected: { comment: null },
+    expected: { commentNotContains: ['missed mate'] },
+  },
+
+  // ZZ catch-all: every inaccuracy / mistake / blunder must carry SOME
+  // comment. User reported the 21st move of their last game went silent
+  // because no specific detector matched. This fixture locks the policy:
+  // even when no tactical/material/positional pattern fits, we name the
+  // engine's preferred move so the player has something to compare.
+  {
+    name: 'ZZ fallback: positional inaccuracy with no specific motif',
+    motif: 'silent',
+    source: 'user-reported "21st move went silent" pattern',
+    prevFen:
+      'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3',
+    prevEval: {
+      cp: 100,
+      bestMoveUci: 'f1c4',
+      pv: ['f1c4', 'g8f6', 'b1c3', 'f8c5'],
+    },
+    playedUci: 'h2h3',
+    currEval: {
+      cp: -100,
+      bestMoveUci: 'g8f6',
+      pv: ['g8f6', 'f1c4', 'f8c5', 'e1g1'],
+    },
+    mover: 'w',
+    category: 'inaccuracy',
+    expected: { commentContains: ['better was', 'bc4'] },
   },
 
   // S1 false-positive guard: queen "skewers knight through pawn" but
@@ -176,6 +203,6 @@ export const realGameFixtures: Fixture[] = [
     },
     mover: 'w',
     category: 'inaccuracy',
-    expected: { comment: null },
+    expected: { commentNotContains: ['skewer'] },
   },
 ];

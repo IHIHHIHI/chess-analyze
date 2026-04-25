@@ -171,12 +171,10 @@ export const forkFixtures: Fixture[] = [
     },
     mover: 'w',
     category: 'mistake',
-    // No fork comment — rook attacks two pawns but their combined value
-    // doesn't exceed the rook's. Pipeline-level: G1/L1 may not fire either
-    // (no direct capture); expected is "no F1 token" but runner checks
-    // for null. Since this position has no other detector firing at
-    // category 'mistake' with this winDrop, comment should be null.
-    expected: { comment: null },
+    // No fork comment — rook attacks two pawns but combined value doesn't
+    // exceed the rook's. Some other detector (or ZZ catch-all) may fire —
+    // we just verify F1's "fork" token is absent.
+    expected: { commentNotContains: ['fork'] },
   },
   {
     name: 'F1 negative: pawn push attacks single enemy piece (no fork)',
@@ -196,7 +194,8 @@ export const forkFixtures: Fixture[] = [
     },
     mover: 'w',
     category: 'mistake',
-    // Only one enemy in the pawn's attack squares (b6 is empty). F1 silent.
-    expected: { comment: null },
+    // Only one enemy in the pawn's attack squares (b6 is empty). F1 silent;
+    // ZZ catch-all may fire with the engine's preferred move.
+    expected: { commentNotContains: ['fork'] },
   },
 ];

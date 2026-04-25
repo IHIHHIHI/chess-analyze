@@ -10,6 +10,7 @@ import { detector as ps } from './detectors/ps-positional';
 import { detector as r1 } from './detectors/r1-remove-defender';
 import { detector as s1 } from './detectors/s1-skewer';
 import { detector as t1 } from './detectors/t1-trapped';
+import { detector as zz } from './detectors/zz-fallback';
 import type { Detector, DetectorContext, Finding } from './types';
 
 // Canonical priority order from pure-churning-clarke.md, refined post real-
@@ -20,12 +21,12 @@ import type { Detector, DetectorContext, Finding } from './types';
 // 3. one-move named tactics (F1, P1, S1, T1)
 // 4. generic single-capture material (G1, L1)
 // 5. NET material loss across the line (L2) — catches diffuse multi-ply
-//    trades that no single-capture detector can name. Without L2,
-//    "by analyzing the engine line, you can easily see material difference
-//    after that" cases would fall through to silence or to misleading
-//    positional comments.
-// 6. positional fallback (PS) — only when nothing material matched AND
-//    winDrop ≥ 10
+//    trades that no single-capture detector can name.
+// 6. positional fallback (PS) — narrates structural weaknesses when
+//    material is roughly balanced.
+// 7. ZZ generic catch-all — fires for ANY remaining inaccuracy / mistake
+//    / blunder by naming the engine's preferred move. User policy: every
+//    flagged move must carry a comment.
 export const detectors: Detector[] = [
   m1, m2,
   r1, d1,
@@ -33,6 +34,7 @@ export const detectors: Detector[] = [
   g1, l1,
   l2,
   ps,
+  zz,
 ];
 
 export function runPipeline(ctx: DetectorContext): Finding | null {

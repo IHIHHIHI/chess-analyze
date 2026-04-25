@@ -11,10 +11,10 @@ import { buildGameModel } from '../src/game/pgn';
 import type { GameModel, MoveAnalysis, PositionEval } from '../src/game/types';
 import { NodeEngine } from './engine';
 
-const USERNAME = 'ihihhihi';
+const USERNAME = (process.env.USERNAME ?? 'ihihhihi').toLowerCase();
 const USER_AGENT = 'chess-review-investigation';
 const DEPTH = 14;
-const MAX_GAMES = 4; // 3-5 games range; pick 4 for breadth without explosion
+const MAX_GAMES = parseInt(process.env.MAX_GAMES ?? '4', 10);
 const REQUEST_DELAY_MS = 1000;
 
 interface ChessComArchives { archives: string[] }
@@ -256,7 +256,10 @@ async function main() {
 
   const summaries: GameSummary[] = [];
   // Write incrementally so we don't lose data on crash.
-  const outFile = path.resolve(SCRIPT_DIR, 'analysis-output.json');
+  const outFile = path.resolve(
+    SCRIPT_DIR,
+    process.env.OUTPUT_FILE ?? `analysis-output-${USERNAME}.json`,
+  );
   for (const g of games) {
     console.error(`\nAnalyzing ${g.url}`);
     try {

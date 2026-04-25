@@ -96,7 +96,9 @@ export type FixtureMotif =
 
 export type FixtureExpectation =
   | { comment: null }
-  | { commentContains: string[] };
+  | { commentContains: string[] }
+  | { commentNotContains: string[] }
+  | { commentContains: string[]; commentNotContains: string[] };
 
 export interface Fixture {
   name: string;

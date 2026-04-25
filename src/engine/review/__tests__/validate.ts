@@ -72,7 +72,20 @@ export function commentMatches(
   if ('comment' in expected) {
     return actual === expected.comment;
   }
-  if (actual === null) return false;
-  const lower = actual.toLowerCase();
-  return expected.commentContains.every((s) => lower.includes(s.toLowerCase()));
+
+  const lower = actual === null ? null : actual.toLowerCase();
+  const includes = 'commentContains' in expected ? expected.commentContains : null;
+  const excludes = 'commentNotContains' in expected ? expected.commentNotContains : null;
+
+  if (includes && includes.length > 0) {
+    if (lower === null) return false;
+    if (!includes.every((s) => lower.includes(s.toLowerCase()))) return false;
+  }
+  if (excludes && excludes.length > 0) {
+    // null comment satisfies notContains trivially.
+    if (lower !== null && excludes.some((s) => lower.includes(s.toLowerCase()))) {
+      return false;
+    }
+  }
+  return true;
 }

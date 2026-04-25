@@ -204,6 +204,6 @@ export const skewerFixtures: Fixture[] = [
     },
     mover: 'w',
     category: 'mistake',
-    expected: { comment: null },
+    expected: { commentNotContains: ['skewer'] },
   },
 ];
