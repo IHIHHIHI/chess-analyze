@@ -89,14 +89,25 @@ function isStandard(g: ChessComGame): boolean {
 async function pickRecentGames(): Promise<ChessComGame[]> {
   const archivesUrl = `https://api.chess.com/pub/player/${USERNAME}/games/archives`;
   const archs = await fetchJson<ChessComArchives>(archivesUrl);
-  const recent = archs.archives.slice(-2); // most recent 2 monthly archives
+  // chess.com sometimes lists future-month archives that 404 when fetched
+  // (Magnus profile in particular). Walk backwards from the most recent and
+  // skip 404s until we accumulate enough games.
   const allGames: ChessComGame[] = [];
-  for (const u of recent) {
+  for (let i = archs.archives.length - 1; i >= 0; i--) {
+    if (allGames.length >= MAX_GAMES * 3) break;
     await sleep(REQUEST_DELAY_MS);
-    const arch = await fetchJson<ChessComArchive>(u);
-    allGames.push(...arch.games);
+    try {
+      const arch = await fetchJson<ChessComArchive>(archs.archives[i]);
+      allGames.push(...arch.games);
+    } catch (e) {
+      const msg = (e as Error).message;
+      if (msg.includes('HTTP 404')) {
+        console.error(`  skipping ${archs.archives[i]} (404)`);
+        continue;
+      }
+      throw e;
+    }
   }
-  // Sort by end_time (or by archive order as fallback) descending
   allGames.sort((a, b) => (b.end_time ?? 0) - (a.end_time ?? 0));
   const filtered = allGames.filter(isStandard);
   return filtered.slice(0, MAX_GAMES);
