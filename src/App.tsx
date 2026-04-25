@@ -85,8 +85,8 @@ export default function App() {
       </main>
 
       <footer className="px-6 pb-6 text-xs text-slate-500">
-        Use ← / → to step, Home / End to jump, F to flip the board. Drag a piece to test a
-        variation; Esc returns to the game.
+        Use ← / → to step, Home / End to jump, F to flip the board. Drag a piece — or click a
+        piece and then a highlighted square — to test a variation; Esc returns to the game.
       </footer>
     </div>
   );
