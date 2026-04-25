@@ -2,6 +2,7 @@ import { Chess } from 'chess.js';
 import { create } from 'zustand';
 import { Engine } from '../engine/stockfish';
 import { classifyMove } from '../engine/classify';
+import { reviewMove } from '../engine/review';
 import { buildGameModel } from '../game/pgn';
 import type {
   ExplorationMove,
@@ -205,12 +206,23 @@ export const useStore = create<State>((set, get) => {
             const prev = analyses[i - 1];
             const move = game.moves[i - 1];
             if (prev && move) {
-              classifications[i - 1] = classifyMove({
+              const cls = classifyMove({
                 prevEval: prev,
                 currEval: evaluation,
                 mover: move.color,
                 playedUci: move.uci,
               });
+              const review = reviewMove({
+                prevFen: game.positions[i - 1],
+                prevEval: prev,
+                currEval: evaluation,
+                mover: move.color,
+                playedUci: move.uci,
+                category: cls.category,
+              });
+              classifications[i - 1] = review.comment
+                ? { ...cls, comment: review.comment }
+                : cls;
             }
           }
 

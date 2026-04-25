@@ -71,13 +71,31 @@ export function MoveList() {
   return (
     <div ref={containerRef} className="max-h-[480px] overflow-y-auto rounded bg-slate-800 p-2">
       <div className="grid grid-cols-[2.5rem_1fr_1fr] gap-x-1 gap-y-0.5">
-        {rows.map((r) => (
-          <div key={r.number} className="contents">
-            <div className="px-1 py-1 text-right font-mono text-xs text-slate-500">{r.number}.</div>
-            <Cell moveIndex={r.white} />
-            <Cell moveIndex={r.black} />
-          </div>
-        ))}
+        {rows.map((r) => {
+          const activeIdx =
+            r.white !== undefined && ply === r.white + 1
+              ? r.white
+              : r.black !== undefined && ply === r.black + 1
+                ? r.black
+                : undefined;
+          const comment =
+            activeIdx !== undefined ? classifications[activeIdx]?.comment : undefined;
+          return (
+            <div key={r.number} className="contents">
+              <div className="px-1 py-1 text-right font-mono text-xs text-slate-500">{r.number}.</div>
+              <Cell moveIndex={r.white} />
+              <Cell moveIndex={r.black} />
+              {comment && (
+                <div
+                  role="note"
+                  className="col-span-3 mb-1 ml-10 mr-1 rounded bg-slate-900/60 px-2 py-1 text-[11px] italic text-slate-300"
+                >
+                  {comment}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

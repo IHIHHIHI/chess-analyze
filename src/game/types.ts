@@ -47,6 +47,7 @@ export interface MoveAnalysis {
   delta: number;
   bestMoveUci: string | null;
   playedUci: string;
+  comment?: string;
 }
 
 export interface ExplorationMove {
