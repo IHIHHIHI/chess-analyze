@@ -2,13 +2,20 @@ import {
   MIN_MATERIAL_LOSS,
   SINGLE_CAPTURE_TOLERANCE,
   findUncompensatedCapture,
+  netMaterialLoss,
 } from '../helpers';
 import type { Detector } from '../types';
 
 export const detector: Detector = (ctx) => {
   if (ctx.kind !== 'full') return null;
-  const { lossVsBest, playedReplay, opponent, helpers } = ctx;
+  const { lossVsBest, playedReplay, opponent, mover, helpers } = ctx;
   if (lossVsBest < MIN_MATERIAL_LOSS) return null;
+
+  // Sanity: played line must actually NET material loss for mover. Mirror
+  // of G1's guard — without this, recapture-of-prior-loss patterns can
+  // be misnarrated as a hang.
+  const lineNetLoss = netMaterialLoss(playedReplay.moves, mover);
+  if (lineNetLoss < MIN_MATERIAL_LOSS) return null;
 
   const opponentGain = findUncompensatedCapture(playedReplay.moves, opponent);
   if (

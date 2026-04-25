@@ -2,6 +2,7 @@ import {
   MIN_MATERIAL_LOSS,
   SINGLE_CAPTURE_TOLERANCE,
   findUncompensatedCapture,
+  netMaterialLoss,
   pieceValue,
 } from '../helpers';
 import type { Detector } from '../types';
@@ -10,6 +11,15 @@ export const detector: Detector = (ctx) => {
   if (ctx.kind !== 'full') return null;
   const { lossVsBest, bestReplay, mover, helpers, played } = ctx;
   if (lossVsBest < MIN_MATERIAL_LOSS) return null;
+
+  // Sanity: best line must actually NET material for mover. Real-game audit
+  // (MagnusCarlsen ply 57) had findUncompensatedCapture flag a +3 capture
+  // that came AFTER the mover already gave up a -3 piece in the same line
+  // (Qf4 Bxc3 Nxc3 ...). The recapture is real but not a net gain. Without
+  // this guard G1 fires "Missed Qf4 — wins the bishop on c3" which is
+  // misleading. Net loss across line must be ≤ -1.5 (mover gained ≥ 1.5).
+  const lineNetLoss = netMaterialLoss(bestReplay.moves, mover);
+  if (lineNetLoss > -MIN_MATERIAL_LOSS) return null;
 
   const moverGain = findUncompensatedCapture(bestReplay.moves, mover);
   if (
