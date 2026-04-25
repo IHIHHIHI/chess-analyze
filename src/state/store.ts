@@ -24,6 +24,7 @@ interface State {
   progress: { done: number; total: number };
   error: string | null;
   exploration: ExplorationState | null;
+  explorationMultiPV: number;
 
   importGame: (input: { pgn?: string; fen?: string }) => void;
   startAnalysis: () => Promise<void>;
@@ -41,6 +42,7 @@ interface State {
   undoExplorationMove: () => void;
   exitExploration: () => void;
   truncateExploration: (toLength: number) => void;
+  setExplorationMultiPV: (n: number) => void;
 }
 
 let engine: Engine | null = null;
@@ -69,7 +71,14 @@ export const useStore = create<State>((set, get) => {
     if (!pre || pre.line.length === 0) return;
     const preTipIdx = pre.line.length - 1;
     const cached = pre.analyses[preTipIdx];
-    if (cached && cached.depth >= get().depth) return;
+    const wantedLines = get().explorationMultiPV;
+    if (
+      cached &&
+      cached.depth >= get().depth &&
+      (cached.lines?.length ?? 0) >= wantedLines
+    ) {
+      return;
+    }
 
     const myRunId = ++exploreRunId;
 
@@ -92,7 +101,7 @@ export const useStore = create<State>((set, get) => {
     set({ exploration: { ...exp, analyzing: true, analyzeError: null } });
 
     try {
-      const result = await exploreEngine.evaluate(fen, get().depth);
+      const result = await exploreEngine.evaluate(fen, get().depth, wantedLines);
       if (myRunId !== exploreRunId) return;
       const cur = get().exploration;
       if (!cur) return;
@@ -132,6 +141,7 @@ export const useStore = create<State>((set, get) => {
     progress: { done: 0, total: 0 },
     error: null,
     exploration: null,
+    explorationMultiPV: 3,
 
     importGame: ({ pgn, fen }) => {
       get().cancelAnalysis();
@@ -346,6 +356,14 @@ export const useStore = create<State>((set, get) => {
 
     exitExploration: () => {
       clearExploration();
+    },
+
+    setExplorationMultiPV: (n) => {
+      const clamped = clamp(Math.round(n), 1, 5);
+      if (get().explorationMultiPV === clamped) return;
+      set({ explorationMultiPV: clamped });
+      const exp = get().exploration;
+      if (exp && exp.line.length > 0) void analyzeExplorationTip();
     },
 
     truncateExploration: (toLength) => {
