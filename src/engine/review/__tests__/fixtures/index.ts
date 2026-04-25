@@ -5,14 +5,16 @@ import { materialFixtures } from './material.fixtures';
 // Temporarily excluded — invalid FEN/UCI in one fixture is blocking the
 // runner; coordinator will reinstate after fixing.
 // import { pinFixtures } from './pin.fixtures';
+import { positionalFixtures } from './positional.fixtures';
 import { skewerFixtures } from './skewer.fixtures';
 import { trappedFixtures } from './trapped.fixtures';
 
-// Phase B will append: forkFixtures, pinFixtures, positionalFixtures.
+// Phase B will append: forkFixtures, pinFixtures.
 export const allFixtures: Fixture[] = [
   ...materialFixtures,
   ...skewerFixtures,
   ...defenderFixtures,
   ...discoveredFixtures,
   ...trappedFixtures,
+  ...positionalFixtures,
 ];
