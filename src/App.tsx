@@ -3,7 +3,7 @@ import { Board } from './components/Board';
 import { Controls } from './components/Controls';
 import { EvalBar } from './components/EvalBar';
 import { EvalGraph } from './components/EvalGraph';
-import { GameImport } from './components/GameImport';
+import { ImportTabs } from './components/ImportTabs';
 import { MoveList } from './components/MoveList';
 import { ReviewSummary } from './components/ReviewSummary';
 import { VariationPanel } from './components/VariationPanel';
@@ -61,7 +61,7 @@ export default function App() {
 
       <main className="grid gap-6 p-6 lg:grid-cols-[340px_minmax(0,1fr)_360px]">
         <section className="space-y-4">
-          <GameImport />
+          <ImportTabs />
           <ReviewSummary />
         </section>
 
