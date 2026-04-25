@@ -138,6 +138,23 @@ export const realGameFixtures: Fixture[] = [
     expected: { commentContains: ['rook'] },
   },
 
+  // M1 false-positive guard: prev was mate-in-1 via Qge8#; player chose
+  // Qg8# instead. Both mate. Pre-fix: M1 fired "Missed mate in 1." because
+  // currEval (mated position) reports mate=0 which fails the stillMate
+  // check. Post-fix: M1 returns null when played.san ends with '#'.
+  {
+    name: 'Real: black plays a different mate-in-1; M1 must stay silent',
+    motif: 'silent',
+    source: 'chess.com/game/live/167785806370 ply 134',
+    prevFen: '2K5/4q3/6q1/8/8/8/8/4k3 b - - 19 67',
+    prevEval: { mate: -1, bestMoveUci: 'g6e8', pv: ['g6e8'] },
+    playedUci: 'g6g8',
+    currEval: { mate: 0, bestMoveUci: null, pv: [] },
+    mover: 'b',
+    category: 'blunder',
+    expected: { comment: null },
+  },
+
   // S1 false-positive guard: queen "skewers knight through pawn" but
   // lossVsBest is 0 — the back pawn is never captured.
   {
