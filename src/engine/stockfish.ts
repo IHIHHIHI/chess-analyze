@@ -103,6 +103,20 @@ export class Engine {
     });
   }
 
+  // Cancel the in-flight evaluate(): rejects the pending promise, asks the
+  // engine to stop, and waits for it to drain so the next evaluate() starts
+  // from a clean state. Safe to call when nothing is pending.
+  async abortCurrent(): Promise<void> {
+    if (this.terminated || !this.current) return;
+    const cur = this.current;
+    this.current = null;
+    cur.reject(new Error('Engine evaluation cancelled'));
+    const drained = this.waitFor((l) => l === 'readyok');
+    this.send('stop');
+    this.send('isready');
+    await drained;
+  }
+
   terminate() {
     this.terminated = true;
     try {
