@@ -5,12 +5,12 @@ import { GameImport } from './GameImport';
 type Tab = 'paste' | 'chesscom';
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'paste', label: 'Paste' },
   { id: 'chesscom', label: 'Chess.com' },
+  { id: 'paste', label: 'Paste' },
 ];
 
 export function ImportTabs() {
-  const [tab, setTab] = useState<Tab>('paste');
+  const [tab, setTab] = useState<Tab>('chesscom');
 
   return (
     <div className="space-y-3">
