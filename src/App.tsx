@@ -6,6 +6,7 @@ import { EvalGraph } from './components/EvalGraph';
 import { GameImport } from './components/GameImport';
 import { MoveList } from './components/MoveList';
 import { ReviewSummary } from './components/ReviewSummary';
+import { VariationPanel } from './components/VariationPanel';
 import { useStore } from './state/store';
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
   const first = useStore((s) => s.first);
   const last = useStore((s) => s.last);
   const flip = useStore((s) => s.flip);
+  const exitExploration = useStore((s) => s.exitExploration);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -36,6 +38,9 @@ export default function App() {
         case 'F':
           flip();
           break;
+        case 'Escape':
+          exitExploration();
+          break;
         default:
           return;
       }
@@ -43,7 +48,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [next, prev, first, last, flip]);
+  }, [next, prev, first, last, flip, exitExploration]);
 
   return (
     <div className="min-h-full bg-slate-900 text-slate-100">
@@ -68,6 +73,9 @@ export default function App() {
             </div>
           </div>
           <Controls />
+          <div className="w-full max-w-[700px]">
+            <VariationPanel />
+          </div>
         </section>
 
         <section className="flex flex-col gap-4">
@@ -77,7 +85,8 @@ export default function App() {
       </main>
 
       <footer className="px-6 pb-6 text-xs text-slate-500">
-        Use ← / → to step, Home / End to jump, F to flip the board.
+        Use ← / → to step, Home / End to jump, F to flip the board. Drag a piece — or click a
+        piece and then a highlighted square — to test a variation; Esc returns to the game.
       </footer>
     </div>
   );

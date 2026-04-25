@@ -1,10 +1,20 @@
 import { useStore } from '../state/store';
+import type { PositionEval } from '../game/types';
 
 export function EvalBar() {
   const ply = useStore((s) => s.ply);
   const orientation = useStore((s) => s.orientation);
   const analyses = useStore((s) => s.analyses);
-  const evaluation = analyses[ply];
+  const exploration = useStore((s) => s.exploration);
+
+  let evaluation: PositionEval | null | undefined;
+  if (exploration && exploration.line.length > 0) {
+    evaluation = exploration.analyses[exploration.line.length - 1];
+  } else if (exploration) {
+    evaluation = analyses[exploration.rootPly];
+  } else {
+    evaluation = analyses[ply];
+  }
 
   // Compute a 0..100 percentage representing white's share of the bar.
   let whitePct = 50;

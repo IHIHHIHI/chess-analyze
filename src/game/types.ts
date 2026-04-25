@@ -23,6 +23,12 @@ export interface GameModel {
   headers: Record<string, string | null>;
 }
 
+export interface PositionEvalLine {
+  cp?: number;
+  mate?: number;
+  pv: string[];
+}
+
 export interface PositionEval {
   fen: string;
   depth: number;
@@ -30,6 +36,7 @@ export interface PositionEval {
   mate?: number;
   bestMoveUci: string | null;
   pv: string[];
+  lines: PositionEvalLine[];
 }
 
 export interface MoveAnalysis {
@@ -40,4 +47,19 @@ export interface MoveAnalysis {
   delta: number;
   bestMoveUci: string | null;
   playedUci: string;
+}
+
+export interface ExplorationMove {
+  san: string;
+  uci: string;
+  color: Color;
+  fenAfter: string;
+}
+
+export interface ExplorationState {
+  rootPly: number;
+  line: ExplorationMove[];
+  analyses: (PositionEval | null)[];
+  analyzing: boolean;
+  analyzeError: string | null;
 }

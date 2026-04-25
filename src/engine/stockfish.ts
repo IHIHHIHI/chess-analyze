@@ -2,13 +2,21 @@ import type { PositionEval } from '../game/types';
 
 const ENGINE_URL = '/stockfish/stockfish-nnue-16-single.js';
 
+interface InfoLine {
+  cp?: number;
+  mate?: number;
+  pv: string[];
+  depth: number;
+}
+
 interface PendingEval {
   fen: string;
   depth: number;
   whiteToMove: boolean;
+  multiPV: number;
   resolve: (e: PositionEval) => void;
   reject: (err: Error) => void;
-  lastInfo?: { cp?: number; mate?: number; pv: string[]; depth: number };
+  lastInfoByMpv: Map<number, InfoLine>;
 }
 
 export class Engine {
@@ -50,7 +58,6 @@ export class Engine {
     this.send('uci');
     await uciOk;
     const readyOk = this.waitFor((l) => l === 'readyok');
-    this.send('setoption name MultiPV value 1');
     this.send('isready');
     await readyOk;
   }
@@ -61,31 +68,49 @@ export class Engine {
 
     if (line.startsWith('info ')) {
       const info = parseInfo(line);
-      if (info) cur.lastInfo = info;
+      if (info) {
+        cur.lastInfoByMpv.set(info.mpv, {
+          cp: info.cp,
+          mate: info.mate,
+          pv: info.pv,
+          depth: info.depth,
+        });
+      }
       return;
     }
 
     if (line.startsWith('bestmove')) {
       const tokens = line.split(/\s+/);
       const bestMoveUci = tokens[1] && tokens[1] !== '(none)' ? tokens[1] : null;
-      const li = cur.lastInfo;
 
-      const cpRaw = li?.cp;
-      const mateRaw = li?.mate;
+      const sortedKeys = Array.from(cur.lastInfoByMpv.keys()).sort((a, b) => a - b);
+      const lines = sortedKeys.map((mpv) => {
+        const info = cur.lastInfoByMpv.get(mpv)!;
+        return {
+          cp: info.cp === undefined ? undefined : cur.whiteToMove ? info.cp : -info.cp,
+          mate:
+            info.mate === undefined ? undefined : cur.whiteToMove ? info.mate : -info.mate,
+          pv: info.pv,
+        };
+      });
+
+      const top = lines[0];
+      const topInfo = cur.lastInfoByMpv.get(sortedKeys[0] ?? 1);
       const result: PositionEval = {
         fen: cur.fen,
-        depth: li?.depth ?? cur.depth,
-        cp: cpRaw === undefined ? undefined : (cur.whiteToMove ? cpRaw : -cpRaw),
-        mate: mateRaw === undefined ? undefined : (cur.whiteToMove ? mateRaw : -mateRaw),
+        depth: topInfo?.depth ?? cur.depth,
+        cp: top?.cp,
+        mate: top?.mate,
         bestMoveUci,
-        pv: li?.pv ?? (bestMoveUci ? [bestMoveUci] : []),
+        pv: top?.pv ?? (bestMoveUci ? [bestMoveUci] : []),
+        lines,
       };
       this.current = null;
       cur.resolve(result);
     }
   }
 
-  async evaluate(fen: string, depth: number): Promise<PositionEval> {
+  async evaluate(fen: string, depth: number, multiPV = 1): Promise<PositionEval> {
     await this.ready;
     if (this.current) {
       throw new Error('Engine busy: serialize evaluate() calls');
@@ -96,11 +121,34 @@ export class Engine {
 
     const whiteToMove = fen.split(' ')[1] === 'w';
     return new Promise<PositionEval>((resolve, reject) => {
-      this.current = { fen, depth, whiteToMove, resolve, reject };
+      this.current = {
+        fen,
+        depth,
+        whiteToMove,
+        multiPV,
+        resolve,
+        reject,
+        lastInfoByMpv: new Map(),
+      };
       this.send('ucinewgame');
+      this.send(`setoption name MultiPV value ${multiPV}`);
       this.send(`position fen ${fen}`);
       this.send(`go depth ${depth}`);
     });
+  }
+
+  // Cancel the in-flight evaluate(): rejects the pending promise, asks the
+  // engine to stop, and waits for it to drain so the next evaluate() starts
+  // from a clean state. Safe to call when nothing is pending.
+  async abortCurrent(): Promise<void> {
+    if (this.terminated || !this.current) return;
+    const cur = this.current;
+    this.current = null;
+    cur.reject(new Error('Engine evaluation cancelled'));
+    const drained = this.waitFor((l) => l === 'readyok');
+    this.send('stop');
+    this.send('isready');
+    await drained;
   }
 
   terminate() {
@@ -118,17 +166,26 @@ export class Engine {
   }
 }
 
-function parseInfo(line: string): { cp?: number; mate?: number; pv: string[]; depth: number } | null {
+function parseInfo(line: string): {
+  mpv: number;
+  cp?: number;
+  mate?: number;
+  pv: string[];
+  depth: number;
+} | null {
   const tokens = line.split(/\s+/);
   let cp: number | undefined;
   let mate: number | undefined;
   let depth = 0;
+  let mpv = 1;
   let pv: string[] = [];
 
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (t === 'depth') {
       depth = Number(tokens[i + 1]) || 0;
+    } else if (t === 'multipv') {
+      mpv = Number(tokens[i + 1]) || 1;
     } else if (t === 'score') {
       const kind = tokens[i + 1];
       const val = Number(tokens[i + 2]);
@@ -141,5 +198,5 @@ function parseInfo(line: string): { cp?: number; mate?: number; pv: string[]; de
   }
 
   if (cp === undefined && mate === undefined) return null;
-  return { cp, mate, pv, depth };
+  return { mpv, cp, mate, pv, depth };
 }
