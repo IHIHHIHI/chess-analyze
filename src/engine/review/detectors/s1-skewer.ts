@@ -103,6 +103,10 @@ function findSkewers(
         // Strictly: front more valuable than back. King front always
         // qualifies (king is highest in our value table at 100).
         if (frontVal <= backVal) continue;
+        // Back piece must be a meaningful target. Real-game audit
+        // (2026-04-25) showed S1 firing on skewers through pawn backstops
+        // that the engine never actually captured. Require ≥ minor piece.
+        if (backVal < 3) continue;
         hits.push({
           sliderSq: sq,
           sliderType: p.type,
@@ -123,12 +127,18 @@ function key(h: SkewerHit): string {
 
 export const detector: Detector = (ctx) => {
   if (ctx.kind !== 'full') return null;
-  const { prevBoard, bestBoard, bestReplay, mover, helpers } = ctx;
+  const { prevBoard, bestBoard, bestReplay, mover, helpers, lossVsBest } = ctx;
 
   // G1 covers direct captures; defer to it.
   const firstBest = bestReplay.moves[0];
   if (!firstBest) return null;
   if (firstBest.captured) return null;
+
+  // The skewer must actually win material. Real-game audit (2026-04-25)
+  // showed S1 firing on geometric skewers (queen "skewers" knight through
+  // a pawn) that nett zero — the front piece moves and the back-pawn
+  // backstop is never relevant. Same gate as F1/G1/L1.
+  if (lossVsBest < 1.5) return null;
 
   const prevHits = findSkewers(prevBoard, mover, helpers.pieceValue);
   const bestHits = findSkewers(bestBoard, mover, helpers.pieceValue);

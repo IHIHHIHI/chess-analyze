@@ -189,6 +189,6 @@ export const discoveredFixtures: Fixture[] = [
     },
     mover: 'w',
     category: 'inaccuracy',
-    expected: { comment: null },
+    expected: { commentNotContains: ['discovered'] },
   },
 ];

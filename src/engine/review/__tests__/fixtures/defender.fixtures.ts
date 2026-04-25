@@ -150,10 +150,8 @@ export const defenderFixtures: Fixture[] = [
     mover: 'w',
     category: 'mistake',
     // R1 must stay silent — Nxe5's destination (e5) doesn't defend Bxh4's
-    // target (h4), so there is no remove-the-defender pattern. G1's slop
-    // tolerance also keeps it silent (two-capture line vs single-capture
-    // gain). Comment is null.
-    expected: { comment: null },
+    // target (h4), so there is no remove-the-defender pattern.
+    expected: { commentNotContains: ['removes', 'defender'] },
   },
   {
     name: "neg: G1-style single capture (no R1 pattern)",

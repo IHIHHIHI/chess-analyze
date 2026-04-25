@@ -55,16 +55,29 @@ function detectPS5(
 
 // PS6 — Lost bishop pair.
 //
-// Mover's own move cannot reduce mover's bishop count in a single ply, so we
-// inspect `playedReplay.finalBoard` — the position after the played line has
-// played out (typically: mover's bishop trade, opponent's recapture). If
-// after that line mover has ≤1 bishop while prev had two on opposite colors,
-// the played move surrendered the pair.
+// Real-game audit (2026-04-25 IHIHHIHI ply 41): an exchange sacrifice
+// (Rxe3 trading rook for knight) was narrated as "Surrenders the bishop
+// pair" because the downstream playedReplay involved a bishop trade. The
+// played move was a rook move, not a bishop move — bishop loss was a
+// secondary consequence of the worsening position. To avoid this kind of
+// misnarration, PS6 only fires when the played move is bishop-related:
+//   - the played move itself is a bishop move (mover trading or moving
+//     a bishop), OR
+//   - the opponent's first reply captures a mover bishop.
+// Otherwise the bishop loss is incidental and PS6 should defer to other
+// detectors (or ZZ catch-all).
 function detectPS6(
   prevBoard: Chess,
   finalBoard: Chess,
   mover: Color,
+  played: { piece: string },
+  oppFirstReply: { captured?: string; color: string } | undefined,
 ): Finding | null {
+  const playedIsBishop = played.piece === 'b';
+  const oppCapturedBishop =
+    oppFirstReply?.captured === 'b' && oppFirstReply.color !== mover;
+  if (!playedIsBishop && !oppCapturedBishop) return null;
+
   const prevBishops = bishopsOf(prevBoard, mover);
   if (prevBishops.length < 2) return null;
   const nowBishops = bishopsOf(finalBoard, mover);
@@ -218,7 +231,13 @@ export const detector: Detector = (ctx) => {
   const ps5 = detectPS5(prevBoard, playedBoard, played, mover);
   if (ps5) return ps5;
 
-  const ps6 = detectPS6(prevBoard, playedReplay.finalBoard, mover);
+  const ps6 = detectPS6(
+    prevBoard,
+    playedReplay.finalBoard,
+    mover,
+    played,
+    playedReplay.moves[1],
+  );
   if (ps6) return ps6;
 
   const ps4 = detectPS4(prevBoard, playedBoard, played, mover);

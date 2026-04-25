@@ -76,7 +76,7 @@ export const materialFixtures: Fixture[] = [
     expected: { commentContains: ['drops', 'queen', 'd3', 'bxd3'] },
   },
   {
-    name: 'silent: positional inaccuracy (Na3 instead of Bc4)',
+    name: 'silent: positional inaccuracy (Na3 instead of Bc4) — falls through to ZZ',
     motif: 'silent',
     source: 'synthetic Italian-game-like position',
     prevFen:
@@ -94,7 +94,7 @@ export const materialFixtures: Fixture[] = [
     },
     mover: 'w',
     category: 'inaccuracy',
-    expected: { comment: null },
+    expected: { commentContains: ['better was', 'bc4'] },
   },
   {
     name: 'silent: opening move classified as good (early-exit gate)',

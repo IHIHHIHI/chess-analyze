@@ -8,7 +8,7 @@ interface ForkTarget {
 
 export const detector: Detector = (ctx) => {
   if (ctx.kind !== 'full') return null;
-  const { bestBoard, bestReplay, mover, helpers } = ctx;
+  const { bestBoard, bestReplay, mover, helpers, lossVsBest } = ctx;
 
   const moved = bestReplay.moves[0];
   if (!moved) return null;
@@ -17,6 +17,12 @@ export const detector: Detector = (ctx) => {
   // Only fire F1 when the engine creates two threats without grabbing
   // anything itself — keeps the two detectors decoupled.
   if (moved.captured) return null;
+
+  // The fork must actually win material. Real-game audit (2026-04-25)
+  // showed F1 firing on geometric forks where the engine line netted 0
+  // material because the second target was a pawn the queen calmly
+  // sidestepped from. Require a real material delta, same gate as G1/L1.
+  if (lossVsBest < 1.5) return null;
 
   const attackerSq = moved.to;
   const attackerType = moved.piece;
@@ -50,12 +56,14 @@ export const detector: Detector = (ctx) => {
   const bestSan = moved.san;
   if (!bestSan) return null;
 
-  // Royal fork: king + at least one other piece. The opponent must move the
-  // king, leaving the other target to be picked up next.
+  // Royal fork: king + at least one other piece worth ≥ 3. Real-game audit
+  // (2026-04-25) showed F1 was firing on geometric "royal forks" of king +
+  // a pawn that the engine never actually grabbed; require the second
+  // target be a minor piece or better.
   if (kingTarget && targets.length >= 1) {
-    // Pick the most valuable non-king target for the comment.
     targets.sort((a, b) => b.value - a.value);
     const other = targets[0];
+    if (other.value < 3) return null;
     return {
       id: 'F1',
       comment:
@@ -65,11 +73,12 @@ export const detector: Detector = (ctx) => {
     };
   }
 
-  // Non-royal fork: need ≥2 targets, and the sum of the two largest target
-  // values must exceed the attacker's value (the attacker can take the more
-  // valuable piece and net positive even if recaptured).
+  // Non-royal fork: need ≥2 targets, BOTH worth ≥ 3 (minor piece minimum).
+  // A rook attacking "queen + pawn" isn't a meaningful fork — the queen
+  // calmly retreats and the pawn is never captured. Same audit motivation.
   if (targets.length < 2) return null;
   targets.sort((a, b) => b.value - a.value);
+  if (targets[1].value < 3) return null;
   const topTwo = targets[0].value + targets[1].value;
   if (topTwo <= attackerValue) return null;
 
