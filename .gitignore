@@ -5,3 +5,6 @@ dist
 .vite
 tsconfig.tsbuildinfo
 .claude
+
+# Real-game analyzer outputs — regenerable, not part of source
+scripts/*.json

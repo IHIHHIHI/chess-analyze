@@ -105,6 +105,8 @@ export interface CaptureCandidate {
   square: Square;
   san: string;
   net: number;
+  /** Index into the moves[] array — 1 = first opponent reply, 3+ = multi-ply tactic. */
+  moveIndex: number;
 }
 
 export function findUncompensatedCapture(
@@ -127,10 +129,30 @@ export function findUncompensatedCapture(
     }
     if (net <= 0) continue;
     if (!best || net > best.net) {
-      best = { piece: m.captured, square: m.to, san: m.san, net };
+      best = { piece: m.captured, square: m.to, san: m.san, net, moveIndex: i };
     }
   }
   return best;
+}
+
+/**
+ * Net material delta over a replay, from `mover`'s perspective.
+ * Positive = mover net-loses; we sum opponent captures minus mover captures.
+ * Used by L2 to narrate diffuse multi-ply trade losses that don't reduce to a
+ * single uncompensated capture.
+ */
+export function netMaterialLoss(
+  moves: VerboseMove[],
+  mover: Color,
+): number {
+  let loss = 0;
+  for (const m of moves) {
+    if (!m.captured) continue;
+    const v = pieceValue(m.captured);
+    if (m.color === mover) loss -= v;       // mover captured = mover gained = less loss
+    else loss += v;                         // opponent captured = mover lost
+  }
+  return loss;
 }
 
 export function attackersOf(
