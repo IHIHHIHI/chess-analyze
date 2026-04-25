@@ -6,12 +6,13 @@ import { materialFixtures } from './material.fixtures';
 // runner; coordinator will reinstate after fixing.
 // import { pinFixtures } from './pin.fixtures';
 import { skewerFixtures } from './skewer.fixtures';
+import { trappedFixtures } from './trapped.fixtures';
 
-// Phase B will append: forkFixtures, pinFixtures, trappedFixtures,
-// positionalFixtures.
+// Phase B will append: forkFixtures, pinFixtures, positionalFixtures.
 export const allFixtures: Fixture[] = [
   ...materialFixtures,
   ...skewerFixtures,
   ...defenderFixtures,
   ...discoveredFixtures,
+  ...trappedFixtures,
 ];
